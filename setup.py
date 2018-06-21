@@ -3,7 +3,7 @@ from setuptools import setup
 setup(name='pylib',
       version='.83',
       description='Python shared library',
-      url='http://github.com/kenlowrie/pylib',
+      url='https://github.com/kenlowrie/pylib',
       author='Ken Lowrie',
       author_email='ken@kenlowrie.com',
       license='Apache',
