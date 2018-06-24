@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+"""
+    Library of common APIs for Python Applications
+"""
+
 import os
 
 __all__ = ['context', 'ntpx', 'TEMPDIR', 'USER', 'COMPUTER']
