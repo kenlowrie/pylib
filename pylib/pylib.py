@@ -6,7 +6,7 @@
 
 import os
 
-__all__ = ['context', 'ntpx', 'TEMPDIR', 'USER', 'COMPUTER']
+__all__ = ['context', 'ntpx', 'parent', 'popd', 'pushd', 'TEMPDIR', 'USER', 'COMPUTER']
 
 TEMPDIR = '/temp'
 USER = ''
@@ -186,6 +186,99 @@ class ntpx:
     def datetime(self):
         """returns the time of the file in seconds"""
         return self._time
+
+_pushdstack = []
+
+def parent(pathspec):
+    """
+    Return the parent directory of pathspec.
+
+    This function calls abspath() on pathspec before splitting it into pieces.
+    If you pass in a partial path, it will return the normalized absolute path,
+    and not just any relative path that was on the original pathspec.
+    """
+    from os.path import split, abspath
+    path, filename = split(abspath(pathspec))
+
+    return path
+
+def pushd(dir=None, throw_if_dir_invalid=True):
+    """
+    Push the current working directory (CWD) onto a stack, set CWD to 'dir'
+    
+    Save the CWD onto a global stack so that we can return to it later. 
+    
+    If dir is None, the function simply stores the CWD onto the stack and returns.
+
+    If throw_if_dir_invalid is True (default), this method will throw whatever 
+    exception is raised by chdir(dir). Otherwise, it returns True or False.
+
+    Use popd() to restore the original directory.
+    
+    Returns:
+        True - Success
+        False - Failure
+    """
+    global _pushdstack
+    from os import getcwd, chdir
+
+    if dir is None:
+        dir = getcwd()
+
+    if not isinstance(dir,type('')):
+        raise TypeError("pushd() expected string object, but got {}".format(type(dir)))
+
+    _pushdstack.append(getcwd())
+    
+    if not dir:
+        return
+
+    try:
+        chdir(dir)
+        err = 0
+    except OSError:
+        err = 1
+
+    if err == 1:
+        _pushdstack.pop()
+        if throw_if_dir_invalid:
+            raise
+
+    return True if err == 0 else False
+
+def popd(pop_all=False, throw_if_dir_invalid=True):
+    """
+    Set the current working directory back to what it was when last pushd() was called.
+    
+    pushd() creates a stack, so each call to popd() simply sets the CWD back to what it
+    was on the prior pushd() call.
+    
+    If pop_all is True, sets the CWD to the state when pushd() was first called. Does
+    NOT call os.getcwd() for intervening paths, only the final path.
+
+    If throw_if_dir_invalid is True (default), this method will throw whatever 
+    exception is raised by chdir(dir). Otherwise, it returns True or False.
+    """
+    global _pushdstack
+    from os import chdir
+
+    if len(_pushdstack) == 0:
+        raise ValueError("popd() called on an empty stack.")
+
+    if pop_all:
+        while( len(_pushdstack) > 1):
+            _pushdstack.pop()
+
+    try:
+        chdir(_pushdstack.pop())
+        err = 0
+    except OSError:
+        err = 1
+
+    if err == 1 and throw_if_dir_invalid:
+        raise
+
+    return err == 0
 
 
 if (__name__=="__main__"):
