@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='pylib',
-      version='0.8.3',
+      version='0.8.8',
       description='Python shared library',
       url='https://github.com/kenlowrie/pylib',
       author='Ken Lowrie',
