@@ -4,13 +4,12 @@
     Library of common APIs for Python Applications
 """
 
-import os
-
 __all__ = ['context', 'ntpx', 'parent', 'popd', 'pushd', 'TEMPDIR', 'USER', 'COMPUTER']
 
 TEMPDIR = '/temp'
 USER = ''
 COMPUTER = ''
+
 
 class context:
     """
@@ -24,10 +23,12 @@ class context:
     """
 
     def __init__(self, foo, alias=None):
-        self._whoami = os.path.abspath(foo)
-        self._whereami,whocares = os.path.split(self._whoami)
+        from os.path import abspath, split, splitext
+
+        self._whoami = abspath(foo)
+        self._whereami,whocares = split(self._whoami)
         
-        name,ext = os.path.splitext(whocares)
+        name,ext = splitext(whocares)
 
         if alias is None:
             self._alias = name
@@ -61,26 +62,29 @@ except:
     me = context(argv[0])
     
 def _init():
+    from os import name, environ
+    from os.path import normcase
+
     global USER, COMPUTER, TEMPDIR
 
-    if os.name == 'nt':
+    if name == 'nt':
         ENVUSERNAME = 'USERNAME'
         ENVTMPDIR = 'TEMP'
-    else:   # assume os.name == 'posix'
+    else:   # assume name == 'posix'
         ENVUSERNAME = 'LOGNAME'
         ENVTMPDIR = 'TMPDIR'
 
-    if ( ENVUSERNAME in os.environ):
-        USER = os.environ[ENVUSERNAME]
+    if ( ENVUSERNAME in environ):
+        USER = environ[ENVUSERNAME]
 
     from platform import node
     
     COMPUTER = node()
 
-    if (ENVTMPDIR in os.environ):
-        TEMPDIR = os.environ[ENVTMPDIR]
+    if (ENVTMPDIR in environ):
+        TEMPDIR = environ[ENVTMPDIR]
 
-    TEMPDIR = os.path.normcase(TEMPDIR)
+    TEMPDIR = normcase(TEMPDIR)
 
 
 class ntpx:
@@ -93,19 +97,23 @@ class ntpx:
 
     def __init__(self,path,normalize=1):
         """object constructor takes a path, and optionally, whether to normalize the path"""
-        if normalize:
-            self._full = os.path.abspath(os.path.normpath(path))
-        else:
-            self._full = os.path.abspath(path)
+        from os import sep
+        from os.path import abspath, normpath, splitdrive, split, splitext
+        from os.path import getsize, getmtime
 
-        self._driv,x = os.path.splitdrive(self._full)
-        self._path,y = os.path.split(x)
-        self._path += os.sep
-        self._name,self._ext = os.path.splitext(y)
+        if normalize:
+            self._full = abspath(normpath(path))
+        else:
+            self._full = abspath(path)
+
+        self._driv,x = splitdrive(self._full)
+        self._path,y = split(x)
+        self._path += sep
+        self._name,self._ext = splitext(y)
 
         if os.path.exists(self._full):
-            self._size = os.path.getsize(self._full)
-            self._time = os.path.getmtime(self._full)
+            self._size = getsize(self._full)
+            self._time = getmtime(self._full)
 
         else:
             self._size = None
