@@ -4,13 +4,12 @@
     Library of common APIs for Python Applications
 """
 
-import os
-
-__all__ = ['context', 'ntpx', 'TEMPDIR', 'USER', 'COMPUTER']
+__all__ = ['context', 'ntpx', 'parent', 'popd', 'pushd', 'TEMPDIR', 'USER', 'COMPUTER']
 
 TEMPDIR = '/temp'
 USER = ''
 COMPUTER = ''
+
 
 class context:
     """
@@ -24,10 +23,12 @@ class context:
     """
 
     def __init__(self, foo, alias=None):
-        self._whoami = os.path.abspath(foo)
-        self._whereami,whocares = os.path.split(self._whoami)
+        from os.path import abspath, split, splitext
+
+        self._whoami = abspath(foo)
+        self._whereami,whocares = split(self._whoami)
         
-        name,ext = os.path.splitext(whocares)
+        name,ext = splitext(whocares)
 
         if alias is None:
             self._alias = name
@@ -61,26 +62,29 @@ except:
     me = context(argv[0])
     
 def _init():
+    from os import name, environ
+    from os.path import normcase
+
     global USER, COMPUTER, TEMPDIR
 
-    if os.name == 'nt':
+    if name == 'nt':
         ENVUSERNAME = 'USERNAME'
         ENVTMPDIR = 'TEMP'
-    else:   # assume os.name == 'posix'
+    else:   # assume name == 'posix'
         ENVUSERNAME = 'LOGNAME'
         ENVTMPDIR = 'TMPDIR'
 
-    if ( ENVUSERNAME in os.environ):
-        USER = os.environ[ENVUSERNAME]
+    if ( ENVUSERNAME in environ):
+        USER = environ[ENVUSERNAME]
 
     from platform import node
     
     COMPUTER = node()
 
-    if (ENVTMPDIR in os.environ):
-        TEMPDIR = os.environ[ENVTMPDIR]
+    if (ENVTMPDIR in environ):
+        TEMPDIR = environ[ENVTMPDIR]
 
-    TEMPDIR = os.path.normcase(TEMPDIR)
+    TEMPDIR = normcase(TEMPDIR)
 
 
 class ntpx:
@@ -93,19 +97,23 @@ class ntpx:
 
     def __init__(self,path,normalize=1):
         """object constructor takes a path, and optionally, whether to normalize the path"""
-        if normalize:
-            self._full = os.path.abspath(os.path.normpath(path))
-        else:
-            self._full = os.path.abspath(path)
+        from os import sep
+        from os.path import abspath, normpath, splitdrive, split, splitext
+        from os.path import getsize, getmtime
 
-        self._driv,x = os.path.splitdrive(self._full)
-        self._path,y = os.path.split(x)
-        self._path += os.sep
-        self._name,self._ext = os.path.splitext(y)
+        if normalize:
+            self._full = abspath(normpath(path))
+        else:
+            self._full = abspath(path)
+
+        self._driv,x = splitdrive(self._full)
+        self._path,y = split(x)
+        self._path += sep
+        self._name,self._ext = splitext(y)
 
         if os.path.exists(self._full):
-            self._size = os.path.getsize(self._full)
-            self._time = os.path.getmtime(self._full)
+            self._size = getsize(self._full)
+            self._time = getmtime(self._full)
 
         else:
             self._size = None
@@ -186,6 +194,99 @@ class ntpx:
     def datetime(self):
         """returns the time of the file in seconds"""
         return self._time
+
+_pushdstack = []
+
+def parent(pathspec):
+    """
+    Return the parent directory of pathspec.
+
+    This function calls abspath() on pathspec before splitting it into pieces.
+    If you pass in a partial path, it will return the normalized absolute path,
+    and not just any relative path that was on the original pathspec.
+    """
+    from os.path import split, abspath
+    path, filename = split(abspath(pathspec))
+
+    return path
+
+def pushd(dir=None, throw_if_dir_invalid=True):
+    """
+    Push the current working directory (CWD) onto a stack, set CWD to 'dir'
+    
+    Save the CWD onto a global stack so that we can return to it later. 
+    
+    If dir is None, the function simply stores the CWD onto the stack and returns.
+
+    If throw_if_dir_invalid is True (default), this method will throw whatever 
+    exception is raised by chdir(dir). Otherwise, it returns True or False.
+
+    Use popd() to restore the original directory.
+    
+    Returns:
+        True - Success
+        False - Failure
+    """
+    global _pushdstack
+    from os import getcwd, chdir
+
+    if dir is None:
+        dir = getcwd()
+
+    if not isinstance(dir,type('')):
+        raise TypeError("pushd() expected string object, but got {}".format(type(dir)))
+
+    _pushdstack.append(getcwd())
+    
+    if not dir:
+        return
+
+    try:
+        chdir(dir)
+        err = 0
+    except OSError:
+        err = 1
+
+    if err == 1:
+        _pushdstack.pop()
+        if throw_if_dir_invalid:
+            raise
+
+    return True if err == 0 else False
+
+def popd(pop_all=False, throw_if_dir_invalid=True):
+    """
+    Set the current working directory back to what it was when last pushd() was called.
+    
+    pushd() creates a stack, so each call to popd() simply sets the CWD back to what it
+    was on the prior pushd() call.
+    
+    If pop_all is True, sets the CWD to the state when pushd() was first called. Does
+    NOT call os.getcwd() for intervening paths, only the final path.
+
+    If throw_if_dir_invalid is True (default), this method will throw whatever 
+    exception is raised by chdir(dir). Otherwise, it returns True or False.
+    """
+    global _pushdstack
+    from os import chdir
+
+    if len(_pushdstack) == 0:
+        raise ValueError("popd() called on an empty stack.")
+
+    if pop_all:
+        while( len(_pushdstack) > 1):
+            _pushdstack.pop()
+
+    try:
+        chdir(_pushdstack.pop())
+        err = 0
+    except OSError:
+        err = 1
+
+    if err == 1 and throw_if_dir_invalid:
+        raise
+
+    return err == 0
 
 
 if (__name__=="__main__"):
