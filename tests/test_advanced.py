@@ -75,7 +75,7 @@ class PyLibPathTests(unittest.TestCase):
         self.assertEquals(cwd,os.getcwd())
 
         logging.info('Calling pushd() with invalid directory...')
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(OSError):
             pylib.pushd('this_dir_does_not_exist')
 
         logging.info('Calling pushd() with invalid directory but asking for T/F...')
