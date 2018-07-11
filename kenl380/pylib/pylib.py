@@ -15,8 +15,9 @@ class context:
     """
     Provides context to a Python module with several useful methods.
 
-    The context object provides methods to give useful context to a Python module.
-    Things like current location, fully qualified script name, an alias and more.
+    The context object provides methods to give useful context to a Python
+    module. Things like current location, fully qualified script name, an
+    alias and more.
 
     when you instantiate one of these, you pass in __file__ if defined,
     otherwise sys.argv[0]
@@ -71,7 +72,13 @@ def _init():
         ENVUSERNAME = 'USERNAME'
         ENVTMPDIR = 'TEMP'
     else:   # assume name == 'posix'
-        ENVUSERNAME = 'LOGNAME'
+        this_var = None
+        for env_var in ['LOGNAME', 'USER']:
+            if env_var in environ:
+                this_var = env_var
+                break
+
+        ENVUSERNAME = 'LOGNAME' if not this_var else this_var
         ENVTMPDIR = 'TMPDIR'
 
     if ( ENVUSERNAME in environ):
@@ -99,7 +106,7 @@ class ntpx:
         """object constructor takes a path, and optionally, whether to normalize the path"""
         from os import sep
         from os.path import abspath, normpath, splitdrive, split, splitext
-        from os.path import getsize, getmtime
+        from os.path import getsize, getmtime, exists
 
         if normalize:
             self._full = abspath(normpath(path))
@@ -111,7 +118,7 @@ class ntpx:
         self._path += sep
         self._name,self._ext = splitext(y)
 
-        if os.path.exists(self._full):
+        if exists(self._full):
             self._size = getsize(self._full)
             self._time = getmtime(self._full)
 
@@ -201,14 +208,12 @@ def parent(pathspec):
     """
     Return the parent directory of pathspec.
 
-    This function calls abspath() on pathspec before splitting it into pieces.
+    This function calls abspath() on pathspec before splitting the path.
     If you pass in a partial path, it will return the normalized absolute path,
     and not just any relative path that was on the original pathspec.
     """
-    from os.path import split, abspath
-    path, filename = split(abspath(pathspec))
-
-    return path
+    from os.path import dirname, abspath
+    return dirname(abspath(pathspec))
 
 def pushd(dir=None, throw_if_dir_invalid=True):
     """
@@ -245,12 +250,10 @@ def pushd(dir=None, throw_if_dir_invalid=True):
         chdir(dir)
         err = 0
     except OSError:
-        err = 1
-
-    if err == 1:
         _pushdstack.pop()
         if throw_if_dir_invalid:
             raise
+        err = 1
 
     return True if err == 0 else False
 
@@ -281,10 +284,9 @@ def popd(pop_all=False, throw_if_dir_invalid=True):
         chdir(_pushdstack.pop())
         err = 0
     except OSError:
+        if throw_if_dir_invalid:
+            raise
         err = 1
-
-    if err == 1 and throw_if_dir_invalid:
-        raise
 
     return err == 0
 
