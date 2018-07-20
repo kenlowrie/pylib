@@ -1,32 +1,82 @@
 #!/usr/bin/env python
 
 """
-    Library of common APIs for Python Applications
+Library of common APIs for Python Applications.
+
+PyLib is a set of common APIs and Classes that are used by many of
+my personal Python applications and packages. In this initial version of
+the library, I've stripped it down to just those things that I have functional
+unittests for. As I have time to add additional tests and documentation, I
+will add more functionality back in.
+
+I recommend importing this package using the syntax:
+
+.. code::
+
+    import kenl380.pylib as pylib
+
+So that you only need to use the ``pylib`` part of the namespace, e.g.:
+
+.. code::
+
+    pylib.USER
+    pylib.context(__file__)
+
 """
 
 __all__ = ['context', 'ntpx', 'parent', 'popd', 'pushd', 'TEMPDIR', 'USER', 'COMPUTER']
 
-TEMPDIR = '/temp'
-USER = ''
-COMPUTER = ''
+TEMPDIR = '/temp'       #: This points to a writable location for temporary files
+USER = ''               #: This is the name of the currently logged-in user.
+COMPUTER = ''           #: This is the host name where your app is running.
 
 
-class context:
+class context(object):
     """
-    Provides context to a Python module with several useful methods.
+    Provides context to a Python module.
 
     The context object provides methods to give useful context to a Python
     module. Things like current location, fully qualified script name, an
     alias and more.
 
     when you instantiate one of these, you pass in __file__ if defined,
-    otherwise sys.argv[0]
+    otherwise sys.argv[0].
+
+    Parameters
+    ----------
+        module : str
+            the fully qualified path for this module
+        alias : str, optional
+            the preferred alias for this module, defaults to basename
+            of the ``module`` variable.
+
+    Examples
+    --------
+    For example, add the following code to your main module.
+
+    .. code::
+
+        import kenl380.pylib as pylib
+
+        def context():
+            try:
+                myself = __file__
+            except NameError:
+                myself = argv[0]
+
+            return pylib.context(myself)
+
+        me = context()
+
+    Now, the ``me`` object can be used to extract useful information
+    about the module, such as: ``me.whereami()`` to get the fully
+    qualified pathname of your script.
     """
 
-    def __init__(self, foo, alias=None):
+    def __init__(self, module, alias=None):
         from os.path import abspath, split, splitext
 
-        self._whoami = abspath(foo)
+        self._whoami = abspath(module)
         self._whereami,whocares = split(self._whoami)
         
         name,ext = splitext(whocares)
@@ -37,19 +87,48 @@ class context:
             self._alias = alias
 
     def whoami(self):
-        """Returns the fully qualified name of the current module"""
+        """Get the fully qualified name of the current module.
+
+        Returns
+        -------
+        str
+            Fully qualified name of the current module
+        """
         return self._whoami
 
     def alias(self):
-        """Returns the alias (shortname) of the current module"""
+        """Returns the alias (shortname) of the current module
+
+        By default, the alias is simply the basename (module name without
+        extension) of the module; however, you can override that by passing
+        in a specific value for the alias when you construct the object.
+
+        Returns
+        -------
+        str
+            The alias for the current module
+        """
         return self._alias
 
     def whereami(self):
-        """Returns the fully qualified path where the current module is stored"""
+        """Returns the fully qualified path where the current module is stored
+
+        Returns
+        -------
+        str
+            Fully qualified path to the current module
+        """
         return self._whereami
 
     def pyVersionStr(self):
-        """Returns the version of the Python Interpreter running my script"""
+        """Version of Python running my script
+
+        Returns
+        -------
+        str
+            A descriptive string containing the version of Python running
+            this script.
+        """
         from sys import version_info
 
         return "Python Interpreter Version: {}.{}.{}".format(version_info.major,
@@ -93,14 +172,56 @@ def _init():
 
     TEMPDIR = normcase(TEMPDIR)
 
+"""Get the fully qualified name of the current module.
 
-class ntpx:
-    """implements the NT-style path manipulation support for arguments.
+And here is a long winded version of the API...
+
+Parameters
+----------
+arg1 : int
+    this is argument 1
+arg2 : str
+    this is argument 2
+
+Returns
+-------
+module_name : str
+    Fully qualified name of the current module
+
+Notes
+-----
+These are some notes about the implementation if needed.
+
+Examples
+--------
+These should be written in doctest format...
+"""
+
+
+class ntpx(object):
+    """Implements the NT-style path manipulation support for arguments.
     
-    example:
+    Examples
+    --------
+    .. code::
     
         print ntpx('c:/dir/foo.ext').format('dp')  - prints 'c:/dir/'
-        print ntpx('c:/dir/foo.ext').format('nx')  - prints 'foo.ext'"""
+        print ntpx('c:/dir/foo.ext').format('nx')  - prints 'foo.ext'
+
+    Of course on any Posix system, drive letter doesn't make sense, so
+    if you run this same code on Mac OS X or Linux, you'd get:
+
+    .. code::
+    
+        print ntpx('c:/dir/foo.ext').format('dp')  - prints 'CWD/c:/dir/'
+        print ntpx('c:/dir/foo.ext').format('nx')  - prints 'foo.ext'
+
+    TODO
+    ----
+    This class should be marked as being deprecated. Python 3's pathlib
+    is a superior alternative with many more features.
+
+    """
 
     def __init__(self,path,normalize=1):
         """object constructor takes a path, and optionally, whether to normalize the path"""
@@ -128,32 +249,55 @@ class ntpx:
 
 
     def all(self):
-        """
-        returns a tuple containing all elements of the object
-        
-        (abs_path, drive_letter, path_only, rootname, extension, filesize, time_in_seconds)
+        """Returns a tuple containing all elements of the object
+
+        This method returns all elements of the path in the form of a tuple.
+         e.g.: `(abs_path, drive_letter, path_only, rootname, extension, 
+         filesize, time_in_seconds)`.
+
+        Returns
+        -------
+        tuple
+            All elements of the path associated with this object as a tuple.
+
+        Notes
+        -----
+        If path points to a non-existant file, the size and datetime will
+        be returned as None (NoneType).
         """
 
         return (self._full, self._driv, self._path, self._name, self._ext, self._size, self._time)
 
     def format(self, fmt):
-        """
-        returns string representing the items specified in the format string
+        """Returns string representing the items specified in the format string
 
-        the format string can contain:
-        
+        The format string can contain:
+
+        .. code::
+
             d - drive letter
             p - path
             n - name
             x - extension
             z - file size
             t - file time in seconds
-        
-        you can string them together, e.g. 'dpnx' returns the fully qualified name.
-        
+
+        And, you can string them together, e.g. `dpnx` returns the fully 
+        qualified name.
+
         On platforms like Unix, where drive letter doesn't make sense, it's simply
         ignored when used in a format string, making it easy to construct fully
         qualified path names in an os independent manner.
+
+        Parameters
+        ----------
+            fmt : str
+                A string representing the elements you want returned.
+
+        Returns
+        -------
+            str
+                A string containing the elements of the path requested in `fmt`
         """
 
         val = ''
@@ -179,27 +323,69 @@ class ntpx:
         return val
 
     def drive(self):
-        """returns the drive letter only"""
+        """returns the drive letter
+
+        Returns
+        -------
+        str
+            The drive letter for the path
+
+        Notes
+        -----
+        Drive letters are a Windows thing. On Posix platforms, this
+        will return an empty string.
+        """
         return self._driv
 
     def path(self):
-        """returns the path only"""
+        """returns the path
+
+        Returns
+        -------
+        str
+            Path to the file or directory
+        """
         return self._path
 
     def name(self):
-        """returns the name only"""
+        """returns the name
+
+        Returns
+        -------
+        str
+            Base name of the file or directory
+        """
         return self._name
 
     def ext(self):
-        """returns the extension only"""
+        """returns the extension
+
+        Returns
+        -------
+        str
+            Extension of the file or directory
+        """
         return self._ext
 
     def size(self):
-        """returns the size of the file"""
+        """returns the size of the file
+
+        Returns
+        -------
+        int
+            Size of the file or None if file doesn't exist
+        """
         return self._size
 
     def datetime(self):
-        """returns the time of the file in seconds"""
+        """returns the modified date and time of the file in seconds
+
+        Returns
+        -------
+        int
+            Modify DateTime of the file in seconds or None if file 
+            doesn't exist
+        """
         return self._time
 
 _pushdstack = []
@@ -228,9 +414,12 @@ def pushd(dir=None, throw_if_dir_invalid=True):
 
     Use popd() to restore the original directory.
     
-    Returns:
-        True - Success
-        False - Failure
+    Returns
+    -------
+        True : bool
+            Success
+        False : bool
+            Failure
     """
     global _pushdstack
     from os import getcwd, chdir
