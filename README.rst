@@ -67,6 +67,9 @@ Sphinx is used to create the documentation for ``pylib``. Be sure to
 add or update the docs for any changes you make. This is required if
 you plan on submitting a pull request.
 
+The documentation is hosted online at 
+`kenl380pylib.readthedocs.io <https://kenl380pylib.readthedocs.io>`__
+
 Testing
 ^^^^^^^
 
