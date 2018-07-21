@@ -13,18 +13,20 @@ Installing
 
 ::
 
-    pip install kenl380.pylib
+    $ pip install kenl380.pylib
 
 Documentation
 ^^^^^^^^^^^^^
 
-Read the documentation for PyLib. (TODO: hyperlink this to online docs)
+Read the documentation for PyLib. It is hosted online at
+ `kenl380pylib.readthedocs.io <https://kenl380pylib.readthedocs.io>`__
+
 
 Credits
 ^^^^^^^
 
-PyLib was written and is maintained by 
-`Ken Lowrie <https://github.com/kenlowrie>`__
+PyLib was written and is maintained by
+ `Ken Lowrie <https://github.com/kenlowrie>`__
 
 License
 ^^^^^^^
@@ -41,7 +43,7 @@ copy of your repository and:
 
 ::
 
-    pipenv install
+    $ pipenv install
 
 The ``pipenv install`` step is only required once to setup the virtual
 environment. After that, you can type ``pipenv shell`` to spawn a shell
@@ -60,15 +62,12 @@ If you're building an application, you can:
 to load the methods and classes from ``pylib`` into your applications'
 namespace.
 
-Documentation
-^^^^^^^^^^^^^
+Update the Docs!
+^^^^^^^^^^^^^^^^
 
 Sphinx is used to create the documentation for ``pylib``. Be sure to
 add or update the docs for any changes you make. This is required if
 you plan on submitting a pull request.
-
-The documentation is hosted online at 
-`kenl380pylib.readthedocs.io <https://kenl380pylib.readthedocs.io>`__
 
 Testing
 ^^^^^^^
@@ -80,7 +79,8 @@ For example, to run unit tests, issue this command from your pipenv shell:
 
 ::
 
-    tox
+    $ pipenv shell
+    $ tox
 
 PyLib's tox.ini is configured to run all of the unittests on both Python 
 2.7 and 3.6, so you need to have both installed locally in order to run
@@ -90,5 +90,7 @@ on your local system.
 Conclusion
 ^^^^^^^^^^
 
-If you have questions or comments, feel free to message me or email me. If
-you find an issue, please add it to GitHub.
+If you have questions or comments, feel free to
+ `contact me via email <mailto:ken@kenlowrie.com>`__. 
+If you find an issue, please add it to
+ `GitHub <https://github.com/kenlowrie/pylib/issues>`__.
