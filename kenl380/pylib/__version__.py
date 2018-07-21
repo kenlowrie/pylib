@@ -1,5 +1,5 @@
 
-VERSION = (1, 0, '0rc1')
+VERSION = (1, 0, '0')
 
 __title__ = 'kenl380.pylib'
 __description__ = 'Python Library for common code used across my packages.'
