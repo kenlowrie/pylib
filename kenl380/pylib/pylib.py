@@ -136,10 +136,10 @@ class context(object):
                                                              version_info.micro)
 
 try:
-    me = context(__file__)
+    __me = context(__file__)
 except:
     from sys import argv
-    me = context(argv[0])
+    __me = context(argv[0])
     
 def _init():
     from os import name, environ
@@ -172,39 +172,27 @@ def _init():
 
     TEMPDIR = normcase(TEMPDIR)
 
-"""Get the fully qualified name of the current module.
-
-And here is a long winded version of the API...
-
-Parameters
-----------
-arg1 : int
-    this is argument 1
-arg2 : str
-    this is argument 2
-
-Returns
--------
-module_name : str
-    Fully qualified name of the current module
-
-Notes
------
-These are some notes about the implementation if needed.
-
-Examples
---------
-These should be written in doctest format...
-"""
-
 
 class ntpx(object):
-    """Implements the NT-style path manipulation support for arguments.
-    
+    """Implements Windows NT command shell path manipulation.
+
+    This class implements methods for manipulating paths, including a
+    simple formatter that accepts a format string similar to what the
+    Windows NT command shell allows.
+
+    Parameters
+    ----------
+        path : str
+            A path that you want to manipulate
+
+        normalize : bool
+            Whether or not to normalize the path that is passed in.
+            Default is True.
+        
     Examples
     --------
     .. code::
-    
+
         print ntpx('c:/dir/foo.ext').format('dp')  - prints 'c:/dir/'
         print ntpx('c:/dir/foo.ext').format('nx')  - prints 'foo.ext'
 
@@ -212,19 +200,17 @@ class ntpx(object):
     if you run this same code on Mac OS X or Linux, you'd get:
 
     .. code::
-    
+
         print ntpx('c:/dir/foo.ext').format('dp')  - prints 'CWD/c:/dir/'
         print ntpx('c:/dir/foo.ext').format('nx')  - prints 'foo.ext'
 
     TODO
     ----
-    This class should be marked as being deprecated. Python 3's pathlib
-    is a superior alternative with many more features.
-
+    Refactor this code when running on Python 3 to use the :py:mod:`pathlib`
+    module, which is a superior alternative with many more features.
     """
 
-    def __init__(self,path,normalize=1):
-        """object constructor takes a path, and optionally, whether to normalize the path"""
+    def __init__(self, path, normalize=True):
         from os import sep
         from os.path import abspath, normpath, splitdrive, split, splitext
         from os.path import getsize, getmtime, exists
@@ -391,35 +377,62 @@ class ntpx(object):
 _pushdstack = []
 
 def parent(pathspec):
-    """
-    Return the parent directory of pathspec.
+    """Return the parent directory of ``pathspec``.
 
     This function calls abspath() on pathspec before splitting the path.
     If you pass in a partial path, it will return the normalized absolute path,
     and not just any relative path that was on the original pathspec.
+
+    Parameters
+    ----------
+        pathspec : str
+            The path (or partial path) whose parent you want to extract
+
+    Returns
+    -------
+        str
+            The parent directory of ``pathspec``
     """
     from os.path import dirname, abspath
     return dirname(abspath(pathspec))
 
 def pushd(dir=None, throw_if_dir_invalid=True):
-    """
-    Push the current working directory (CWD) onto a stack, set CWD to 'dir'
-    
-    Save the CWD onto a global stack so that we can return to it later. 
-    
-    If dir is None, the function simply stores the CWD onto the stack and returns.
+    """Push the current working directory (CWD) onto a stack, set CWD to 'dir'
 
-    If throw_if_dir_invalid is True (default), this method will throw whatever 
-    exception is raised by chdir(dir). Otherwise, it returns True or False.
+    Save the CWD onto a global stack so that we can return to it later. If dir
+    is None, the function simply stores the CWD onto the stack and returns.
+    Use :py:meth:`popd()` to restore the original directory.
 
-    Use popd() to restore the original directory.
-    
+    Parameters
+    ----------
+        dir : str, optional
+            The directory to switch to or None. If None, the default if it
+            is not passed, this function will simply push the current working
+            directory onto the global stack and return.
+        throw_if_dir_invalid : bool, optional
+            Whether or not to pass back up any exception raised by chdir().
+            Default is True.
+
     Returns
     -------
         True : bool
             Success
         False : bool
             Failure
+
+    Raises
+    ------
+        OSError
+            If `throw_if_dir_invalid` is True and chdir raises an exception,
+            this function will chain the same exception as chdir, typically 
+            OSError
+
+        TypeError
+            If the type of ``dir`` is not an instance of `str`
+
+    Notes
+    -----
+    This method and its counterpart :py:meth:`popd` are `not` thread safe!
     """
     global _pushdstack
     from os import getcwd, chdir
@@ -447,17 +460,44 @@ def pushd(dir=None, throw_if_dir_invalid=True):
     return True if err == 0 else False
 
 def popd(pop_all=False, throw_if_dir_invalid=True):
-    """
-    Set the current working directory back to what it was when last pushd() was called.
-    
-    pushd() creates a stack, so each call to popd() simply sets the CWD back to what it
-    was on the prior pushd() call.
-    
-    If pop_all is True, sets the CWD to the state when pushd() was first called. Does
-    NOT call os.getcwd() for intervening paths, only the final path.
+    """Restore current working directory to previous directory.
 
-    If throw_if_dir_invalid is True (default), this method will throw whatever 
-    exception is raised by chdir(dir). Otherwise, it returns True or False.
+    The previous directory is whatever it was when last :py:meth:`pushd()` was 
+    *last* called. :py:meth:`pushd()` creates a stack, so each call to popd() 
+    simply sets the CWD back to what it was on the prior pushd() call.
+
+    Parameters
+    ----------
+        pop_all : bool, optional
+            When `pop_all` is True, sets the CWD to the state when pushd() was 
+            first called. Does NOT call os.getcwd() for intervening paths, only 
+            the final path.
+
+        throw_if_dir_invalid : bool, optional
+            Whether or not to pass back up any exception raised by chdir().
+            Default is True.
+
+    Returns
+    -------
+        True : bool
+            Success
+        False : bool
+            Failure
+
+    Raises
+    ------
+        OSError
+            If `throw_if_dir_invalid` is True and chdir raises an exception,
+            this function will chain the same exception as chdir, typically 
+            OSError
+
+        ValueError
+            If popd() called on an empty stack; i.e. before :py:meth:`pushd()`
+            has been called.
+
+    Notes
+    -----
+    This method and its counterpart :py:meth:`pushd` are **not** thread safe!
     """
     global _pushdstack
     from os import chdir
