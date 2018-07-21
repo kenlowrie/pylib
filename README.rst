@@ -18,15 +18,15 @@ Installing
 Documentation
 ^^^^^^^^^^^^^
 
-Read the documentation for PyLib. It is hosted online at
- `kenl380pylib.readthedocs.io <https://kenl380pylib.readthedocs.io>`__
+Read the documentation for PyLib. It is hosted online at 
+`kenl380pylib.readthedocs.io <https://kenl380pylib.readthedocs.io>`__
 
 
 Credits
 ^^^^^^^
 
-PyLib was written and is maintained by
- `Ken Lowrie <https://github.com/kenlowrie>`__
+PyLib was written and is maintained by 
+`Ken Lowrie <https://github.com/kenlowrie>`__
 
 License
 ^^^^^^^
@@ -90,7 +90,7 @@ on your local system.
 Conclusion
 ^^^^^^^^^^
 
-If you have questions or comments, feel free to
- `contact me via email <mailto:ken@kenlowrie.com>`__. 
-If you find an issue, please add it to
- `GitHub <https://github.com/kenlowrie/pylib/issues>`__.
+If you have questions or comments, feel free to 
+`contact me via email <mailto:ken@kenlowrie.com>`__. 
+If you find an issue, please add it to 
+`GitHub <https://github.com/kenlowrie/pylib/issues>`__.
