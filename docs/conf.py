@@ -15,18 +15,25 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../kenl380/pylib'))
+print(sys.path)
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'PyLib'
-copyright = '2018, Ken Lowrie'
-author = 'Ken Lowrie'
+import __version__ as pylibinfo
+
+project = pylibinfo.__title__
+copyright = pylibinfo.__copyright__
+author = pylibinfo.__author__
 
 # The short X.Y version
-version = ''
+version = pylibinfo.__version__
 # The full version, including alpha/beta/rc tags
-release = ''
+release = pylibinfo.__version__
+
+rst_epilog = """
+.. |PyLibVersion| replace:: {version_num}
+""".format(version_num=version)
 
 
 # -- General configuration ---------------------------------------------------

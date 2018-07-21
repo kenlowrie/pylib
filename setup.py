@@ -9,14 +9,9 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'kenl380.pylib'
-DESCRIPTION = 'Python Library for common code used across my packages.'
-URL = 'https://github.com/kenlowrie/pylib'
-EMAIL = 'ken@kenlowrie.com'
-AUTHOR = 'Ken Lowrie'
 REQUIRES_PYTHON = '>=2.7'
 VERSION = None
-LICENSE = 'APACHE'
+PACKAGE = 'kenl380.pylib'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -31,21 +26,21 @@ EXTRAS = {
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+# Load the package's __version__.py module as a dictionary.
+about = {}
+if not VERSION:
+    with open(os.path.join(here, PACKAGE.replace('.','/'), '__version__.py')) as f:
+        exec(f.read(), about)
+else:
+    about['__version__'] = VERSION
+
 # Import the README and use it as the long-description.
 # Note: this will only work if 'README.rst' is present in your MANIFEST.in file!
 try:
     with io.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
         long_description = '\n' + f.read()
 except FileNotFoundError:
-    long_description = DESCRIPTION
-
-# Load the package's __version__.py module as a dictionary.
-about = {}
-if not VERSION:
-    with open(os.path.join(here, NAME.replace('.','/'), '__version__.py')) as f:
-        exec(f.read(), about)
-else:
-    about['__version__'] = VERSION
+    long_description = about['__description__']
 
 
 class UploadCommand(Command):
@@ -87,16 +82,16 @@ class UploadCommand(Command):
 
 # Where the magic happens:
 setup(
-    name=NAME,
+    name=about['__title__'],
     version=about['__version__'],
-    description=DESCRIPTION,
+    description=about['__description__'],
     long_description=long_description,
     long_description_content_type='text/x-rst',
-    author=AUTHOR,
-    author_email=EMAIL,
+    author=about['__author__'],
+    author_email=about['__author_email__'],
     python_requires=REQUIRES_PYTHON,
-    url=URL,
-    packages=['kenl380.pylib'],
+    url=about['__url__'],
+    packages=[PACKAGE],
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 
@@ -106,7 +101,7 @@ setup(
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
-    license=LICENSE,
+    license=about['__license__'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',

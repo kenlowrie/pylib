@@ -1,6 +1,7 @@
 ===================
 PyLib API Reference
 ===================
+**Version:** |PyLibVersion|
 
 :author: Ken Lowrie
 
