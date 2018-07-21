@@ -45,15 +45,13 @@ copy of your repository and:
 
 The ``pipenv install`` step is only required once to setup the virtual
 environment. After that, you can type ``pipenv shell`` to spawn a shell
-that's setup for working on pylib. You will probably want to install
-pylib in develop or edit mode, so:
+that's setup for working on pylib.
 
-::
+`pylib` is installed in edit mode after running the `pipenv install`, so
+you can make changes directly to the code and test them interactively
+when working inside the `pipenv shell` prompt.
 
-    pipenv shell
-    pip install -e .
-
-And you're all set. If you're building an application, you can:
+If you're building an application, you can:
 
 ::
 
@@ -61,6 +59,16 @@ And you're all set. If you're building an application, you can:
 
 to load the methods and classes from ``pylib`` into your applications'
 namespace.
+
+Documentation
+^^^^^^^^^^^^^
+
+Sphinx is used to create the documentation for ``pylib``. Be sure to
+add or update the docs for any changes you make. This is required if
+you plan on submitting a pull request.
+
+Testing
+^^^^^^^
 
 Make sure that you write unittests for any new methods or classes that you
 add. You can test them using ``tox``.
@@ -70,6 +78,11 @@ For example, to run unit tests, issue this command from your pipenv shell:
 ::
 
     tox
+
+PyLib's tox.ini is configured to run all of the unittests on both Python 
+2.7 and 3.6, so you need to have both installed locally in order to run
+the tests. You can use Homebrew or Pyenv to get multiple versions installed 
+on your local system.
 
 Conclusion
 ^^^^^^^^^^

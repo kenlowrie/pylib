@@ -10,8 +10,7 @@ Welcome to PyLib's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: pylib
-   :members:
+   apiref
 
 
 Indices and tables

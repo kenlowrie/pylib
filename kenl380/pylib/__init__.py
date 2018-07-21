@@ -16,4 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .__version__ import __title__, __description__, __url__, __version__
+from .__version__ import __author__, __author_email__, __license__, __copyright__
+
 from .pylib import *
